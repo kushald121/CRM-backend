@@ -11,30 +11,62 @@ const userRoutes = require('./routes/users');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Session Store
+const PgSession = require('connect-pg-simple')(session);
+const db = require('./db');
+
 // Middleware
 app.use(cors({
-    origin: true, // Reflects the origin of the request, allowing any domain during testing/dev
+    origin: true,
     credentials: true
 }));
 app.use(express.json());
-app.set('trust proxy', 1); // Trust Render proxy
+app.set('trust proxy', 1);
+
 app.use(session({
+    store: new PgSession({
+        pool: db.pool,
+        tableName: 'session',
+        createTableIfMissing: true
+    }),
     secret: process.env.SESSION_SECRET || 'crm_secret',
     resave: false,
     saveUninitialized: false,
     proxy: true,
     cookie: {
-        secure: true, // Required for sameSite: 'none'
-        sameSite: 'none', // Required for cross-domain sessions (Vercel -> Render)
+        secure: true,
+        sameSite: 'none',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
+
+// Request Logger
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url} - SessionID: ${req.sessionID}`);
+    next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
+
+// Health check / Diagnostics
+app.get('/api/health', async (req, res) => {
+    try {
+        const dbCheck = await db.query('SELECT NOW()');
+        res.json({
+            status: 'ok',
+            database: 'connected',
+            time: dbCheck.rows[0].now,
+            session: req.session.user ? 'authenticated' : 'anonymous',
+            user: req.session.user || null
+        });
+    } catch (err) {
+        res.status(500).json({ status: 'error', database: 'disconnected', error: err.message });
+    }
+});
 
 // Root route
 app.get('/', (req, res) => {
