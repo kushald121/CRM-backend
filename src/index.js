@@ -16,10 +16,16 @@ const PgSession = require('connect-pg-simple')(session);
 const db = require('./db');
 
 // Middleware
-app.use(cors({
-    origin: true,
-    credentials: true
-}));
+const corsOptions = {
+    origin: ['https://crm-hxy8.vercel.app', 'http://localhost:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
 app.use(express.json());
 app.set('trust proxy', 1);
 
