@@ -17,7 +17,7 @@ const db = require('./db');
 
 // Middleware
 const corsOptions = {
-    origin: ['https://crm-hxy8.vercel.app', 'http://localhost:5173'],
+    origin: ['https://crm-three-beta-73.vercel.app', 'https://crm-hxy8.vercel.app', 'http://localhost:5173'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
