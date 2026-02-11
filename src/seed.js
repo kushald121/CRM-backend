@@ -26,7 +26,7 @@ const seed = async () => {
 
       CREATE TABLE IF NOT EXISTS "Project" (
         id SERIAL PRIMARY KEY,
-        "projectId" TEXT NOT NULL,
+        "projectId" TEXT UNIQUE NOT NULL,
         username TEXT NOT NULL,
         status TEXT NOT NULL,
         "ipAddress" TEXT NOT NULL,
@@ -54,7 +54,7 @@ const seed = async () => {
 
         for (const [email, password, name, role] of users) {
             await client.query(
-                'INSERT INTO "User" (email, password, name, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING',
+                'INSERT INTO "User" (email, password, name, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, name = EXCLUDED.name, role = EXCLUDED.role',
                 [email, password, name, role]
             );
         }
