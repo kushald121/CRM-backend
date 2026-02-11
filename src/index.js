@@ -24,7 +24,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('(.*)', cors(corsOptions)); // Enable pre-flight for all routes (Express 5 compatible)
+app.options(/^.*$/, cors(corsOptions)); // Enable pre-flight for all routes (Express 5 compatible regex)
 
 app.use(express.json());
 app.set('trust proxy', 1);
