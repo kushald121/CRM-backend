@@ -1,0 +1,9 @@
+node_modules
+.env
+*.log
+.vscode/
+
+# Build and Prisma logs
+/prisma/migrations/
+*.db
+*.db-journal

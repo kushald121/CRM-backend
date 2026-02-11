@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_ElItaS4Pn0UY@ep-falling-wind-aio816db-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    // 'admin' or 'user'
+  createdAt DateTime  @default(now())
+  projects  Project[]
+  reviews   Review[]
+}
+
+model Project {
+  id         Int      @id @default(autoincrement())
+  projectId  String
+  userId     Int
+  username   String
+  status     String   // 'active', 'security', 'directors', 'terminated'
+  ipAddress  String
+  country    String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  title       String
+  description String
+  rating      Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
