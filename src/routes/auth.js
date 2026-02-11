@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 
 // Login
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email: rawEmail, password } = req.body;
+    const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
     console.log(`Login attempt for: ${email}`);
     try {
         const result = await db.query('SELECT * FROM "User" WHERE email = $1', [email]);
@@ -16,8 +17,16 @@ router.post('/login', async (req, res) => {
             if (password === user.password) {
                 const { password: _, ...userWithoutPassword } = user;
                 req.session.user = userWithoutPassword;
-                console.log(`Login successful for ${email}. SessionID: ${req.sessionID}`);
-                res.json({ success: true, user: userWithoutPassword });
+
+                // Explicitly save session before responding
+                req.session.save((err) => {
+                    if (err) {
+                        console.error('Session save error:', err);
+                        return res.status(500).json({ error: 'Session save failed' });
+                    }
+                    console.log(`Login successful and session saved for ${email}. SessionID: ${req.sessionID}`);
+                    res.json({ success: true, user: userWithoutPassword });
+                });
             } else {
                 console.warn(`Password mismatch for ${email}`);
                 res.status(401).json({ success: false, error: 'Invalid credentials' });

@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm install && node src/seed.js && node src/seed-dummy.js && echo 'Build complete'",
+    "build": "echo 'Build complete'",
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
+    "start": "node src/seed.js && node src/seed-dummy.js && node src/index.js",
     "prisma:generate": "dotenv -e .env -- npx prisma generate",
     "prisma:migrate": "dotenv -e .env -- npx prisma migrate dev",
     "prisma:studio": "dotenv -e .env -- npx prisma studio",
