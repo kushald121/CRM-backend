@@ -17,12 +17,15 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.set('trust proxy', 1); // Trust Render proxy
 app.use(session({
     secret: process.env.SESSION_SECRET || 'crm_secret',
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-        secure: false, // Set to true if using HTTPS
+        secure: true, // Required for sameSite: 'none'
+        sameSite: 'none', // Required for cross-domain sessions (Vercel -> Render)
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
