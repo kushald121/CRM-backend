@@ -6,19 +6,28 @@ const bcrypt = require('bcryptjs');
 // Login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log(`Login attempt for: ${email}`);
     try {
         const result = await db.query('SELECT * FROM "User" WHERE email = $1', [email]);
         const user = result.rows[0];
 
-        if (user && (password === user.password)) { // In a real app, use bcrypt.compare
-            const { password: _, ...userWithoutPassword } = user;
-            req.session.user = userWithoutPassword;
-            res.json({ success: true, user: userWithoutPassword });
+        if (user) {
+            console.log(`User found: ${user.email}, Role: ${user.role}`);
+            if (password === user.password) {
+                const { password: _, ...userWithoutPassword } = user;
+                req.session.user = userWithoutPassword;
+                console.log(`Login successful for ${email}. SessionID: ${req.sessionID}`);
+                res.json({ success: true, user: userWithoutPassword });
+            } else {
+                console.warn(`Password mismatch for ${email}`);
+                res.status(401).json({ success: false, error: 'Invalid credentials' });
+            }
         } else {
+            console.warn(`User not found: ${email}`);
             res.status(401).json({ success: false, error: 'Invalid credentials' });
         }
     } catch (error) {
-        console.error(error);
+        console.error(`Login error for ${email}:`, error);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -31,6 +40,7 @@ router.post('/logout', (req, res) => {
 
 // Get current user
 router.get('/me', (req, res) => {
+    console.log(`Session check: ${req.session.user ? 'Authenticated: ' + req.session.user.email : 'Anonymous'}. SessionID: ${req.sessionID}`);
     if (req.session.user) {
         res.json({ isAuthenticated: true, user: req.session.user });
     } else {
